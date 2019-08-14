@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:app_lyrics/letraMusic.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+const request = "https://api.lyrics.ovh/v1/artist/title";
 
 class Home extends StatefulWidget {
   @override
   _HomeState createState() => _HomeState();
 }
+
 
 class _HomeState extends State<Home> {
   @override
@@ -48,7 +54,10 @@ class _HomeState extends State<Home> {
                 child: SizedBox(
                   height: 60,
                   child: RaisedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => LetraMusic()));
+                    },
                     child: Text(
                       'Ver Letra',
                       style: TextStyle(fontSize: 20, color: Colors.white),
