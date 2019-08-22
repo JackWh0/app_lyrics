@@ -8,9 +8,8 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-
   var artista = new TextEditingController();
-  var nome = new TextEditingController();
+  var musica = new TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +41,7 @@ class _HomeState extends State<Home> {
               textAlign: TextAlign.center,
             ),
             TextField(
-              controller: nome,
+              controller: musica,
               keyboardType: TextInputType.text,
               decoration: InputDecoration(
                 labelText: 'Nome da música',
@@ -58,11 +57,13 @@ class _HomeState extends State<Home> {
                   child: RaisedButton(
                     onPressed: () {
                       Navigator.push(
-                        context,
-                     MaterialPageRoute(
-                          builder: (context) =>
-                             Lyrics(nome: nome.text, artista: artista.text,),
-                      ));
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Lyrics(
+                              musica: musica.text,
+                              artista: artista.text,
+                            ),
+                          ));
                     },
                     child: Text(
                       'Ver Letra',
@@ -79,26 +80,23 @@ class _HomeState extends State<Home> {
   }
 }
 
-
 //SEGUNDA TELA
 class Lyrics extends StatefulWidget {
+  Future<Map> getData() async {
+    var request = "https://api.lyrics.ovh/v1/$artista/$musica";
 
-  Future<String> getData() async {
+    var resposta = await http.get(request);
 
-  var request = "https://api.lyrics.ovh/v1/$artista/$nome";
- 
-  var resposta = await http.get(request);
+    print(resposta.body);
 
-  print(resposta.body);
+    return json.decode(resposta.body);
+  }
 
-  return json.decode(resposta.body);
-
-}
-
-  final String nome;
+  final String musica;
   final String artista;
 
-  Lyrics({Key key, @required this.nome, @required this.artista}) : super (key: key);
+  Lyrics({Key key, @required this.musica, @required this.artista})
+      : super(key: key);
 
   @override
   _LyricsState createState() => _LyricsState();
@@ -109,10 +107,77 @@ class _LyricsState extends State<Lyrics> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.pink,
-        body:  build(
-
-            ),
-        );
+      body: FutureBuilder(
+        future: widget.getData(),
+        builder: (context, snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+            case ConnectionState.none:
+              return Center(
+                child: Text(
+                  "Carregando...",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 35.0,
+                      color: Colors.amber),
+                ),
+              );
+              break;
+            default:
+              if (snapshot.hasData) {
+                return Scaffold(
+                  backgroundColor: Colors.pink,
+                  body: SingleChildScrollView(
+                    padding: EdgeInsets.only(
+                      top: 70,
+                      left: 20,
+                      right: 20,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Text(
+                          "${widget.musica}",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 45.0,
+                              color: Colors.amber),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 30.0),
+                          child: Text(
+                            "${widget.artista}",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 28.0,
+                                color: Colors.black26),
+                          ),
+                        ),
+                        Text(
+                          snapshot.data['lyrics'],
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16.0,
+                              color: Colors.white),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 30.0),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+                //enviar o snapshot como parametro para inicial e fazer a busca; lá do Widget
+              } else {
+                return Center(
+                  child: Text("Erro na conexão."),
+                );
+              }
+          }
+        },
+      ),
+    );
   }
 }
-
