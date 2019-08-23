@@ -89,7 +89,22 @@ class Lyrics extends StatefulWidget {
 
     print(resposta.body);
 
+  if(resposta.statusCode ==200) {
     return json.decode(resposta.body);
+  }
+    else{
+      throw Exception(
+          Center(
+            child: Text(
+              "Música não encontrada...",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 45.0,
+                  color: Colors.amber),
+            ),
+          ),
+      );
+  }
   }
 
   final String musica;
@@ -156,6 +171,7 @@ class _LyricsState extends State<Lyrics> {
                           ),
                         ),
                         Text(
+
                           snapshot.data['lyrics'],
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
@@ -170,7 +186,18 @@ class _LyricsState extends State<Lyrics> {
                   ),
                 );
                 //enviar o snapshot como parametro para inicial e fazer a busca; lá do Widget
-              } else {
+              }if(snapshot.hasError){
+                return  Center(
+                  child: Text(
+                    "Música não encontrada!",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17.0,
+                        color: Colors.amber),
+                  ),
+                );
+              }
+              else {
                 return Center(
                   child: Text("Erro na conexão."),
                 );
